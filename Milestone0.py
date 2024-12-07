@@ -1,6 +1,6 @@
 import json
 #loading the json file in variable input_data
-with open("Milestone0.json", 'r') as json_File:
+with open("Milestone1.json", 'r') as json_File:
     input_data= json.load(json_File)
 #print(input_data)
 steps=input_data["steps"]
@@ -12,6 +12,7 @@ wafer=input_data["wafers"]
 schedule = []
 #initialising the current time of the machine and the machines initial time 
 current_time = {}
+current=0
 machine_sets= {machine['machine_id']: {'time': 0, 'parameters': machine['initial_parameters']} for machine in input_data['machines']}
 current_time= {machine['machine_id']: 0 for machine in input_data['machines']}
 #procedure to build the schedule
@@ -29,35 +30,36 @@ for wafer in input_data['wafers']:
             print(machine_list)
             print("--------")
             for machine in machine_list:
-                    machine_id=machine['machine_id']
-                    #from the list of machines select the machine with less time
-                    if machine_sets[machine_id]['time']<=current_time[machine_id]:
-                        #print(current_time)
-                        processing_time=wafer['processing_times'][step_id]
-                        #print(wafer['processing_times'][step_id])
-                        start_time=current_time[machine_id]
-                        end_time=start_time +processing_time
-                        #append in the schedule list as dictionary
-                        schedule.append({
+                machine_id=machine['machine_id']
+                #from the list of machines select the machine with less time
+                if machine_sets[machine_id]['time']<=current:
+                    #print(current_time)
+                    processing_time=wafer['processing_times'][step_id]
+                    #print(wafer['processing_times'][step_id])
+                    start_time=current
+                    end_time=start_time +processing_time
+                    #append in the schedule list as dictionary
+                    schedule.append({
                             "wafer_id":wafer_id,
                             "step":step_id,
                             "machine":machine_id,
                             "start_time":start_time,
                             "end_time":end_time
                         })
+                    
                         #once we update the schedule change the machine time
-                        machine_sets[machine_id]['time']= end_time
-                        #if length of the equal to n value make cooldown and initialize
-                        if (len(schedule) ==machine['n']):
-                            cooldown_time =machine['cooldown_time']
-                            current_time[machine_id] =end_time +cooldown_time
-                            machine_sets[machine_id]['parameters']=machine['initial_parameters']
-                        else:
-                            current_time[machine_id]=end_time
-                        break
+                    machine_sets[machine_id]['time']= end_time
+                    current=end_time
+
+                    #if length of the equal to n value make cooldown and initialize
+                    if (len(schedule) ==machine['n']):
+                        cooldown_time =machine['cooldown_time']
+                        current=end_time +cooldown_time
+                        machine_sets[machine_id]['parameters']=machine['initial_parameters']
+                    break
 output_schedule={"schedule":schedule}
 op_file=json.dumps(output_schedule, indent=4)
-with open("mile0.json", "w") as outfile:
+with open("mile1.json", "w") as outfile:
     outfile.write(op_file)
 print(op_file)
 
